@@ -1,6 +1,13 @@
 node_modules/
 packages/*/node_modules/
-packages/*/lib/
+packages/artifact/lib/
+packages/core/lib/
+packages/exec/lib/
+packages/github/lib/
+packages/glob/lib/
+packages/http-client/lib/
+packages/io/lib/
+packages/tool-cache/lib/
 packages/*/__tests__/_temp/
 .DS_Store
 *.xar
