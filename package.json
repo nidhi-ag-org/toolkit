@@ -28,5 +28,9 @@
     "prettier": "^1.19.1",
     "ts-jest": "^27.0.5",
     "typescript": "^3.9.9"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.335.0",
+    "@aws-sdk/lib-storage": "^3.335.0"
   }
 }

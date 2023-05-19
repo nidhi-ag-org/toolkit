@@ -4,6 +4,7 @@ import * as utils from './internal/cacheUtils'
 import * as cacheHttpClient from './internal/cacheHttpClient'
 import {createTar, extractTar, listTar} from './internal/tar'
 import {DownloadOptions, UploadOptions} from './options'
+import {S3ClientConfig} from '@aws-sdk/client-s3'
 
 export class ValidationError extends Error {
   constructor(message: string) {
@@ -68,7 +69,9 @@ export async function restoreCache(
   primaryKey: string,
   restoreKeys?: string[],
   options?: DownloadOptions,
-  enableCrossOsArchive = false
+  enableCrossOsArchive = false,
+  s3Options?: S3ClientConfig,
+  s3BucketName?: string
 ): Promise<string | undefined> {
   checkPaths(paths)
 
@@ -91,10 +94,16 @@ export async function restoreCache(
   let archivePath = ''
   try {
     // path are needed to compute version
-    const cacheEntry = await cacheHttpClient.getCacheEntry(keys, paths, {
-      compressionMethod,
-      enableCrossOsArchive
-    })
+    const cacheEntry = await cacheHttpClient.getCacheEntry(
+      keys,
+      paths,
+      {
+        compressionMethod,
+        enableCrossOsArchive
+      },
+      s3Options,
+      s3BucketName
+    )
     if (!cacheEntry?.archiveLocation) {
       // Cache not found
       return undefined
@@ -113,9 +122,12 @@ export async function restoreCache(
 
     // Download the cache from the cache entry
     await cacheHttpClient.downloadCache(
+      cacheEntry,
       cacheEntry.archiveLocation,
       archivePath,
-      options
+      options,
+      s3Options,
+      s3BucketName
     )
 
     if (core.isDebug()) {
@@ -166,7 +178,9 @@ export async function saveCache(
   paths: string[],
   key: string,
   options?: UploadOptions,
-  enableCrossOsArchive = false
+  enableCrossOsArchive = false,
+  s3Options?: S3ClientConfig,
+  s3BucketName?: string
 ): Promise<number> {
   checkPaths(paths)
   checkKey(key)
@@ -211,42 +225,44 @@ export async function saveCache(
     }
 
     core.debug('Reserving Cache')
-    const reserveCacheResponse = await cacheHttpClient.reserveCache(
-      key,
-      paths,
-      {
-        compressionMethod,
-        enableCrossOsArchive,
-        cacheSize: archiveFileSize
-      }
-    )
 
-    if (reserveCacheResponse?.result?.cacheId) {
-      cacheId = reserveCacheResponse?.result?.cacheId
-    } else if (reserveCacheResponse?.statusCode === 400) {
-      throw new Error(
-        reserveCacheResponse?.error?.message ??
-          `Cache size of ~${Math.round(
-            archiveFileSize / (1024 * 1024)
-          )} MB (${archiveFileSize} B) is over the data cap limit, not saving cache.`
+    if (!(s3Options && s3BucketName)) {
+      core.debug('Reserving Cache')
+      const reserveCacheResponse = await cacheHttpClient.reserveCache(
+        key,
+        paths,
+        {
+          compressionMethod,
+          enableCrossOsArchive,
+          cacheSize: archiveFileSize
+        }
       )
-    } else {
-      throw new ReserveCacheError(
-        `Unable to reserve cache with key ${key}, another job may be creating this cache. More details: ${reserveCacheResponse?.error?.message}`
-      )
+
+      if (reserveCacheResponse?.result?.cacheId) {
+        cacheId = reserveCacheResponse?.result?.cacheId
+      } else if (reserveCacheResponse?.statusCode === 400) {
+        throw new Error(
+          reserveCacheResponse?.error?.message ??
+            `Cache size of ~${Math.round(
+              archiveFileSize / (1024 * 1024)
+            )} MB (${archiveFileSize} B) is over the data cap limit, not saving cache.`
+        )
+      } else {
+        throw new ReserveCacheError(
+          `Unable to reserve cache with key ${key}, another job may be creating this cache. More details: ${reserveCacheResponse?.error?.message}`
+        )
+      }
     }
 
     core.debug(`Saving Cache (ID: ${cacheId})`)
-    await cacheHttpClient.saveCache(cacheId, archivePath, options)
-  } catch (error) {
-    const typedError = error as Error
-    if (typedError.name === ValidationError.name) {
-      throw error
-    } else if (typedError.name === ReserveCacheError.name) {
-      core.info(`Failed to save: ${typedError.message}`)
-    } else {
-      core.warning(`Failed to save: ${typedError.message}`)
-    }
+    await cacheHttpClient.saveCache(
+      cacheId,
+      archivePath,
+      key,
+      options,
+      s3Options,
+      s3BucketName
+    )
   } finally {
     // Try to delete the archive to save space
     try {
