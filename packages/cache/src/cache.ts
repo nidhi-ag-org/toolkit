@@ -75,6 +75,10 @@ export async function restoreCache(
 ): Promise<string | undefined> {
   checkPaths(paths)
 
+  console.log("restoreCache 78")
+  console.log("restoreCache s3BucketName", s3BucketName)
+  console.log("restoreCache s3Options", s3Options)
+
   restoreKeys = restoreKeys || []
   const keys = [primaryKey, ...restoreKeys]
 
@@ -104,6 +108,7 @@ export async function restoreCache(
       s3Options,
       s3BucketName
     )
+    console.log("cacheEntry", cacheEntry)
     if (!cacheEntry?.archiveLocation) {
       // Cache not found
       return undefined

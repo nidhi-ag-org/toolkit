@@ -258,6 +258,7 @@ export async function getCacheEntry(
   s3BucketName?: string
 ): Promise<ArtifactCacheEntry | null> {
   if (s3Options && s3BucketName) {
+    console.log("getCacheEntry")
     return await getCacheEntryS3(s3Options, s3BucketName, keys)
   }
 

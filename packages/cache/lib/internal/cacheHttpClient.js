@@ -198,6 +198,7 @@ function _searchRestoreKeyEntry(notPrimaryKey, entries) {
 function getCacheEntry(keys, paths, options, s3Options, s3BucketName) {
     return __awaiter(this, void 0, void 0, function* () {
         if (s3Options && s3BucketName) {
+            console.log("getCacheEntry");
             return yield getCacheEntryS3(s3Options, s3BucketName, keys);
         }
         const httpClient = createHttpClient();

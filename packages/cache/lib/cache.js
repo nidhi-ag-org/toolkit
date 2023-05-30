@@ -90,6 +90,9 @@ exports.isFeatureAvailable = isFeatureAvailable;
 function restoreCache(paths, primaryKey, restoreKeys, options, enableCrossOsArchive = false, s3Options, s3BucketName) {
     return __awaiter(this, void 0, void 0, function* () {
         checkPaths(paths);
+        console.log("restoreCache 78");
+        console.log("restoreCache s3BucketName", s3BucketName);
+        console.log("restoreCache s3Options", s3Options);
         restoreKeys = restoreKeys || [];
         const keys = [primaryKey, ...restoreKeys];
         core.debug('Resolved Keys:');
@@ -108,6 +111,7 @@ function restoreCache(paths, primaryKey, restoreKeys, options, enableCrossOsArch
                 compressionMethod,
                 enableCrossOsArchive
             }, s3Options, s3BucketName);
+            console.log("cacheEntry", cacheEntry);
             if (!(cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.archiveLocation)) {
                 // Cache not found
                 return undefined;
