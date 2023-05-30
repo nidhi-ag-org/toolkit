@@ -249,8 +249,10 @@ function printCachesListForDiagnostics(key, httpClient, version) {
         }
     });
 }
-function downloadCache(cacheEntry, archiveLocation, archivePath, options, s3Options, s3BucketName) {
+function downloadCache(cacheEntry, archivePath, options, s3Options, s3BucketName) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        const archiveLocation = (_a = cacheEntry.archiveLocation) !== null && _a !== void 0 ? _a : "https://example.com"; // for dummy
         const archiveUrl = new url_1.URL(archiveLocation);
         const downloadOptions = (0, options_1.getDownloadOptions)(options);
         if (downloadOptions.useAzureSdk &&

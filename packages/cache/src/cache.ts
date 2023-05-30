@@ -109,7 +109,7 @@ export async function restoreCache(
       s3BucketName
     )
     console.log("cacheEntry", cacheEntry)
-    if (!cacheEntry?.archiveLocation) {
+    if (!cacheEntry?.archiveLocation && !cacheEntry?.cacheKey) {
       // Cache not found
       return undefined
     }
@@ -128,7 +128,6 @@ export async function restoreCache(
     // Download the cache from the cache entry
     await cacheHttpClient.downloadCache(
       cacheEntry,
-      cacheEntry.archiveLocation,
       archivePath,
       options,
       s3Options,

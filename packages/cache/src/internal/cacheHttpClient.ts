@@ -332,12 +332,12 @@ async function printCachesListForDiagnostics(
 
 export async function downloadCache(
   cacheEntry: ArtifactCacheEntry,
-  archiveLocation: string,
   archivePath: string,
   options?: DownloadOptions,
   s3Options?: S3ClientConfig,
   s3BucketName?: string
 ): Promise<void> {
+  const archiveLocation = cacheEntry.archiveLocation ?? "https://example.com" // for dummy
   const archiveUrl = new URL(archiveLocation)
   const downloadOptions = getDownloadOptions(options)
 

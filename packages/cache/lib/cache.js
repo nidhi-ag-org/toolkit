@@ -112,7 +112,7 @@ function restoreCache(paths, primaryKey, restoreKeys, options, enableCrossOsArch
                 enableCrossOsArchive
             }, s3Options, s3BucketName);
             console.log("cacheEntry", cacheEntry);
-            if (!(cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.archiveLocation)) {
+            if (!(cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.archiveLocation) && !(cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.cacheKey)) {
                 // Cache not found
                 return undefined;
             }
@@ -123,7 +123,7 @@ function restoreCache(paths, primaryKey, restoreKeys, options, enableCrossOsArch
             archivePath = path.join(yield utils.createTempDirectory(), utils.getCacheFileName(compressionMethod));
             core.debug(`Archive Path: ${archivePath}`);
             // Download the cache from the cache entry
-            yield cacheHttpClient.downloadCache(cacheEntry, cacheEntry.archiveLocation, archivePath, options, s3Options, s3BucketName);
+            yield cacheHttpClient.downloadCache(cacheEntry, archivePath, options, s3Options, s3BucketName);
             if (core.isDebug()) {
                 yield (0, tar_1.listTar)(archivePath, compressionMethod);
             }
