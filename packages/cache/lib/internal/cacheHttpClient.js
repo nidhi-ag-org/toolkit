@@ -93,6 +93,7 @@ exports.getCacheVersion = getCacheVersion;
 function getCacheEntryS3(s3Options, s3BucketName, keys) {
     return __awaiter(this, void 0, void 0, function* () {
         const primaryKey = keys[0];
+        console.log("primaryKey", primaryKey);
         const s3client = new client_s3_1.S3Client(s3Options);
         let contents = new Array();
         let s3ContinuationToken = null;
@@ -108,6 +109,7 @@ function getCacheEntryS3(s3Options, s3BucketName, keys) {
             let response;
             try {
                 response = yield s3client.send(new client_s3_1.ListObjectsV2Command(param));
+                console.log("response", response);
             }
             catch (e) {
                 throw new Error(`Error from S3: ${e}`);
@@ -120,7 +122,9 @@ function getCacheEntryS3(s3Options, s3BucketName, keys) {
             }
             core.debug(`Found objects ${response.Contents.length}`);
             const found = response.Contents.find((content) => content.Key === primaryKey);
+            console.log("found", found);
             if (found && found.LastModified) {
+                console.log("last modified");
                 return {
                     cacheKey: primaryKey,
                     creationTime: found.LastModified.toString()

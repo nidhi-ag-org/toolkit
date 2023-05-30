@@ -123,6 +123,8 @@ async function getCacheEntryS3(
 ): Promise<ArtifactCacheEntry | null> {
   const primaryKey = keys[0]
 
+  console.log("primaryKey", primaryKey)
+
   const s3client = new S3Client(s3Options)
 
   let contents: _content[] = new Array()
@@ -142,6 +144,7 @@ async function getCacheEntryS3(
     let response: ListObjectsV2CommandOutput
     try {
       response = await s3client.send(new ListObjectsV2Command(param))
+      console.log("response", response)
     } catch (e) {
       throw new Error(`Error from S3: ${e}`)
     }
@@ -156,7 +159,9 @@ async function getCacheEntryS3(
     const found = response.Contents.find(
       (content: _Object) => content.Key === primaryKey
     )
+    console.log("found", found)
     if (found && found.LastModified) {
+      console.log("last modified")
       return {
         cacheKey: primaryKey,
         creationTime: found.LastModified.toString()
